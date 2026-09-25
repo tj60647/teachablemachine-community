@@ -46,6 +46,7 @@ import {
   SelectItem,
 } from '@/components/ui/select';
 import CameraPanel from '@/components/camera-panel';
+import ExportModelDialog from '@/components/export-model-dialog';
 import {
   MAX_CLASSES,
   MAX_SAMPLES,
@@ -236,9 +237,9 @@ export default function Home() {
   const [saveStatus, setSaveStatus] = useState('Opening project…');
   const saveNumber = useRef(0);
   const [cameraTarget, setCameraTarget] = useState<string | null>(null);
-  const [busy, setBusy] = useState<
-    'training' | 'upload' | 'loading' | 'export' | null
-  >(null);
+  const [busy, setBusy] = useState<'training' | 'upload' | 'loading' | null>(
+    null,
+  );
   const busyRef = useRef(false);
   const [progress, setProgress] = useState<ProgressUpdate>({
     percent: 0,
@@ -252,6 +253,7 @@ export default function Home() {
   const [notice, setNotice] = useState('');
   const [helpOpen, setHelpOpen] = useState(false);
   const [importOpen, setImportOpen] = useState(false);
+  const [exportOpen, setExportOpen] = useState(false);
   const [confirmNew, setConfirmNew] = useState(false);
   const [pendingProject, setPendingProject] = useState<Project | null>(null);
   const [deleteTarget, setDeleteTarget] = useState<{
@@ -446,25 +448,6 @@ export default function Home() {
     } finally {
       await wake?.release().catch(() => {});
       controller.current = null;
-      finish();
-    }
-  }
-  async function exportModel() {
-    if (!modelRef.current || !begin('export')) return;
-    try {
-      const ml = await import('@/lib/ml');
-      const saved = await modelRef.current.snapshot(
-        current.current.id,
-        modelRevision,
-      );
-      const archive = ml.modelArchive(saved);
-      downloadFile(
-        `${safeName(current.current.title)}-model.zip`,
-        new Blob([new Uint8Array(archive)], { type: 'application/zip' }),
-      );
-    } catch (e) {
-      setNotice((e as Error).message);
-    } finally {
       finish();
     }
   }
@@ -850,7 +833,10 @@ export default function Home() {
             <Button
               variant="secondary"
               disabled={locked || !model}
-              onClick={() => void exportModel()}
+              onClick={() => {
+                setCameraTarget(null);
+                setExportOpen(true);
+              }}
             >
               <Upload /> Export Model
             </Button>
@@ -969,11 +955,7 @@ export default function Home() {
       {busy && busy !== 'training' && (
         <output className="work-status">
           <LoaderCircle className="spin" size={17} />
-          {busy === 'upload'
-            ? 'Adding your images…'
-            : busy === 'export'
-              ? 'Preparing download…'
-              : 'Loading…'}
+          {busy === 'upload' ? 'Adding your images…' : 'Loading…'}
         </output>
       )}
       {notice && (
@@ -1025,6 +1007,17 @@ export default function Home() {
           event.target.value = '';
         }}
       />
+      {exportOpen && model && (
+        <ExportModelDialog
+          open={exportOpen}
+          onOpenChange={setExportOpen}
+          model={model}
+          projectId={project.id}
+          revision={modelRevision}
+          title={project.title}
+          stale={modelRevision >= 0 && modelRevision !== project.revision}
+        />
+      )}
       <Dialog open={helpOpen} onOpenChange={setHelpOpen}>
         <DialogContent className="help-dialog">
           <DialogTitle>Teach your phone something new</DialogTitle>
@@ -1053,8 +1046,8 @@ export default function Home() {
             export your trained model separately.
           </p>
           <p>
-            Export Model downloads a TensorFlow.js ZIP with your model, weights,
-            and labels. This version supports image classification.
+            Export Model opens a panel with your TensorFlow.js ZIP, JavaScript
+            and p5.js code, and instructions for using the model in a project.
           </p>
           <Button onClick={() => setHelpOpen(false)}>Got it</Button>
         </DialogContent>

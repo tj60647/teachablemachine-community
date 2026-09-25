@@ -48,6 +48,14 @@ The project menu provides local project backup/restore, new project, and import
 of standard Teachable Machine TensorFlow.js image-model ZIPs. Audio, pose,
 TensorFlow Lite, and cloud training are outside this version's scope.
 
+**Export Model** opens a download panel with the standard three-file
+TensorFlow.js ZIP, JavaScript and p5.js snippets, and downloadable HTML examples.
+Extract the ZIP into `my_model/` next to the example `index.html`, then serve that
+directory over HTTPS (or localhost on a computer). Opening the HTML directly
+as a file does not load the model. Examples load their libraries from a CDN.
+Model export is separate from the mobile app's JSON project backup. Hosted model
+links and TensorFlow/TensorFlow Lite conversion are not implemented.
+
 ## Checks
 
 `npm run typecheck`, `npm test`, and `npm run build:vercel` (or `npm run build`
