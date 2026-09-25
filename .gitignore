@@ -8,3 +8,4 @@ node_modules/
 dist/*
 bundles/*
 *.tgz
+.vercel

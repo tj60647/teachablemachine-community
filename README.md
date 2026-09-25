@@ -1,5 +1,13 @@
 # Teachable Machine Community
 
+### Mobile app in this fork
+
+[Open Teachable Machine Mobile](https://teachable-machine-mobile.vercel.app) in
+Chrome on your phone to collect image samples, train, and try live predictions.
+The app lives in [`mobile/`](./mobile/README.md); samples stay on your device.
+Vercel builds that directory automatically when changes are pushed or merged to
+this fork's `master` branch.
+
 ![Teachable Machine](./teachablemachine.gif)
 
 ### What is Teachable Machine?
